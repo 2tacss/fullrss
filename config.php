@@ -35,7 +35,7 @@ $options->debug = true;
 // ----------------------
 // The number of feed items to process when no API key is supplied
 // and no &max=x value is supplied in the querystring.
-$options->default_entries = 5;
+$options->default_entries = 20;
 
 // Max entries (without access key)
 // ----------------------
