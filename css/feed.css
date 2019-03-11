@@ -1,7 +1,5 @@
 /* RSS CSS Document */
 
-@import url('https://fonts.googleapis.com/css?family=Noto+Sans+JP');
-
 * { margin:0; padding:0; }
 
 p { padding: .5em 0; }
@@ -9,35 +7,14 @@ p { padding: .5em 0; }
 h1,h2,h3,h4,h5,h6 { font-size: 1em; padding: .5em 0; }
 
 html { display:block; padding-bottom:50px; }
-
-/* NOTE: MyAdds */
-@media only screen and (min-width: 321px) and (max-width: 768px) {
-    body { font:80% Verdana, sans-serif; color:#000; padding:25px 0 0 35px; }
-}
-
-@media only screen and (min-width: 769px) {
-    body {
-        font:100% Verdana, sans-serif;
-        color:#000;
-        padding:25px 0 0 35px;
-        width: 60%;
-        margin: 0 auto;
-    }
-}
+body { font:80% Verdana, sans-serif; color:#000; padding:25px 0 0 35px; }
 
 a { color:#5BAB03; text-decoration:none; }
 a:hover { color:#5BAB03; text-decoration: underline;}
 
-ul { margin-left:1.5em;}
+ul { margin-left:1.5em; }
 li { margin-bottom:0.4em; }
-/* NOTE: MyAdds */
-/* div#content>ul { list-style-type: none; } */
-div#content>ul { list-style-type: decimal; }
-div.article {
-    background-color: rgb(227, 227, 227);
-    border-left: solid 25px lightblue;
-    font-family: "Noto Sans JP";
-}
+div#content>ul { list-style-type: none; }
 div.article>li>a { font-weight:bold; font-size: 1.3em;}
 
 

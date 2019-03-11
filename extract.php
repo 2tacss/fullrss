@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*
 HTTP/1.0 200 OK
 {
-    "title": "Blowing Smoke with Boxing's Big Voice",
+    "title": "Blowing Smoke with Boxing's Big Voice",	
     "content" <div><p>Content here</p><p>More content</p></div>",
     "author": "Rafi Kohan",
     "excerpt": "Short extract from the beginning of the article.",
@@ -49,7 +49,7 @@ $_POST['accept'] = 'html';
 // JSON output only
 $_POST['format'] = 'json';
 // Enable excerpts
-$_POST['summary'] = '100';
+$_POST['summary'] = '1';
 // Don't produce result if extraction fails
 $_POST['exc'] = '1';
 // Enable XSS filtering (unless explicitly disabled)

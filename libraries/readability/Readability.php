@@ -1,5 +1,5 @@
 <?php
-/**
+/** 
 * Arc90's Readability ported to PHP for FiveFilters.org
 * Based on readability.js version 1.7.1 (without multi-page support)
 * Updated to allow HTML5 parsing with html5lib
@@ -13,34 +13,34 @@
 * License: Apache License, Version 2.0
 * Requires: PHP5
 * Date: 2015-06-01
-*
+* 
 * Differences between the PHP port and the original
 * ------------------------------------------------------
-* Arc90's Readability is designed to run in the browser. It works on the DOM
-* tree (the parsed HTML) after the page's CSS styles have been applied and
-* Javascript code executed. This PHP port does not run inside a browser.
-* We use PHP's ability to parse HTML to build our DOM tree, but we cannot
-* rely on CSS or Javascript support. As such, the results will not always
-* match Arc90's Readability. (For example, if a web page contains CSS style
-* rules or Javascript code which hide certain HTML elements from display,
-* Arc90's Readability will dismiss those from consideration but our PHP port,
+* Arc90's Readability is designed to run in the browser. It works on the DOM 
+* tree (the parsed HTML) after the page's CSS styles have been applied and 
+* Javascript code executed. This PHP port does not run inside a browser. 
+* We use PHP's ability to parse HTML to build our DOM tree, but we cannot 
+* rely on CSS or Javascript support. As such, the results will not always 
+* match Arc90's Readability. (For example, if a web page contains CSS style 
+* rules or Javascript code which hide certain HTML elements from display, 
+* Arc90's Readability will dismiss those from consideration but our PHP port, 
 * unable to understand CSS or Javascript, will not know any better.)
-*
-* Another significant difference is that the aim of Arc90's Readability is
-* to re-present the main content block of a given web page so users can
-* read it more easily in their browsers. Correct identification, clean up,
-* and separation of the content block is only a part of this process.
-* This PHP port is only concerned with this part, it does not include code
-* that relates to presentation in the browser - Arc90 already do
-* that extremely well, and for PDF output there's FiveFilters.org's
+* 
+* Another significant difference is that the aim of Arc90's Readability is 
+* to re-present the main content block of a given web page so users can 
+* read it more easily in their browsers. Correct identification, clean up, 
+* and separation of the content block is only a part of this process. 
+* This PHP port is only concerned with this part, it does not include code 
+* that relates to presentation in the browser - Arc90 already do 
+* that extremely well, and for PDF output there's FiveFilters.org's 
 * PDF Newspaper: http://fivefilters.org/pdf-newspaper/.
-*
-* Finally, this class contains methods that might be useful for developers
-* working on HTML document fragments. So without deviating too much from
-* the original code (which I don't want to do because it makes debugging
-* and updating more difficult), I've tried to make it a little more
-* developer friendly. You should be able to use the methods here on
-* existing DOMElement objects without passing an entire HTML document to
+* 
+* Finally, this class contains methods that might be useful for developers 
+* working on HTML document fragments. So without deviating too much from 
+* the original code (which I don't want to do because it makes debugging 
+* and updating more difficult), I've tried to make it a little more 
+* developer friendly. You should be able to use the methods here on 
+* existing DOMElement objects without passing an entire HTML document to 
 * be parsed.
 */
 
@@ -48,7 +48,7 @@
 require_once(dirname(__FILE__).'/JSLikeHTMLElement.php');
 
 // Alternative usage (for testing only!)
-// uncomment the lines below and call Readability.php in your browser
+// uncomment the lines below and call Readability.php in your browser 
 // passing it the URL of the page you'd like content from, e.g.:
 // Readability.php?url=http://medialens.org/alerts/09/090615_the_guardian_climate.php
 
@@ -75,11 +75,11 @@ class Readability
 	public $url = null; // optional - URL where HTML was retrieved
 	public $debug = false;
 	public $lightClean = true; // preserves more content (experimental) added 2012-09-19
-	protected $body = null; //
+	protected $body = null; // 
 	protected $bodyCache = null; // Cache the body HTML in case we need to re-use it later
 	protected $flags = 7; // 1 | 2 | 4;   // Start with all flags set.
 	protected $success = false; // indicates whether we were able to extract or not
-
+	
 	/**
 	* All of the regular expressions in use within readability.
 	* Defined up here so we don't instantiate them repeatedly in loops.
@@ -97,19 +97,19 @@ class Readability
 		'killBreaks' => '/(<br\s*\/?>(\s|&nbsp;?)*){1,}/',
 		'video' => '!//(player\.|www\.)?(youtube\.com|vimeo\.com|viddler\.com|soundcloud\.com|twitch\.tv)!i',
 		'skipFootnoteLink' => '/^\s*(\[?[a-z0-9]{1,2}\]?|^|edit|citation needed)\s*$/i'
-	);
-
+	);	
+	
 	/* constants */
 	const FLAG_STRIP_UNLIKELYS = 1;
 	const FLAG_WEIGHT_CLASSES = 2;
 	const FLAG_CLEAN_CONDITIONALLY = 4;
-
+	
 	/**
 	* Create instance of Readability
 	* @param string UTF-8 encoded string
 	* @param string (optional) URL associated with HTML (used for footnotes)
 	* @param string which parser to use for turning raw HTML into a DOMDocument (either 'libxml' or 'html5lib')
-	*/
+	*/	
 	function __construct($html, $url=null, $parser='libxml')
 	{
 		$this->url = $url;
@@ -145,18 +145,18 @@ class Readability
 	public function getTitle() {
 		return $this->articleTitle;
 	}
-
+	
 	/**
 	* Get article content element
 	* @return DOMElement
 	*/
 	public function getContent() {
 		return $this->articleContent;
-	}
-
+	}	
+	
 	/**
 	* Runs readability.
-	*
+	* 
 	* Workflow:
 	*  1. Prep the document by removing script tags, css, etc.
 	*  2. Build readability's DOM tree.
@@ -171,7 +171,7 @@ class Readability
 		if (!isset($this->dom->documentElement)) return false;
 		$this->removeScripts($this->dom);
 		//die($this->getInnerHTML($this->dom->documentElement));
-
+		
 		// Assume successful outcome
 		$this->success = true;
 
@@ -186,14 +186,13 @@ class Readability
 		}
 
 		$this->prepDocument();
-
+		
 		//die($this->dom->documentElement->parentNode->nodeType);
 		//$this->setInnerHTML($this->dom->documentElement, $this->getInnerHTML($this->dom->documentElement));
 		//die($this->getInnerHTML($this->dom->documentElement));
 
 		/* Build readability's DOM tree */
-		// NOTE: MyAdds
-		$overlay        = $this->dom->createElement('li');
+		$overlay        = $this->dom->createElement('div');
 		$innerDiv       = $this->dom->createElement('div');
 		$articleTitle   = $this->getArticleTitle();
 		$articleContent = $this->grabArticle();
@@ -202,9 +201,9 @@ class Readability
 			$this->success = false;
 			$articleContent = $this->dom->createElement('div');
 			$articleContent->setAttribute('id', 'readability-content');
-			$articleContent->innerHTML = '<p>Sorry, Readability was unable to parse this page for content.</p>';
+			$articleContent->innerHTML = '<p>Sorry, Readability was unable to parse this page for content.</p>';		
 		}
-
+		
 		$overlay->setAttribute('id', 'readOverlay');
 		$innerDiv->setAttribute('id', 'readInner');
 
@@ -212,7 +211,7 @@ class Readability
 		$innerDiv->appendChild($articleTitle);
 		$innerDiv->appendChild($articleContent);
 		$overlay->appendChild($innerDiv);
-
+		
 		/* Clear the old HTML, insert the new content. */
 		$this->body->innerHTML = '';
 		$this->body->appendChild($overlay);
@@ -220,21 +219,21 @@ class Readability
 		$this->body->removeAttribute('style');
 
 		$this->postProcessContent($articleContent);
-
+		
 		// Set title and content instance variables
 		$this->articleTitle = $articleTitle;
 		$this->articleContent = $articleContent;
-
+		
 		return $this->success;
 	}
-
+	
 	/**
 	* Debug
 	*/
 	protected function dbg($msg) {
 		if ($this->debug) echo '* ',$msg, "\n";
 	}
-
+	
 	/**
 	* Run any post-process modifications to article content as necessary.
 	*
@@ -242,11 +241,11 @@ class Readability
 	* @return void
 	*/
 	public function postProcessContent($articleContent) {
-		if ($this->convertLinksToFootnotes && !preg_match('/wikipedia\.org/', @$this->url)) {
+		if ($this->convertLinksToFootnotes && !preg_match('/wikipedia\.org/', @$this->url)) { 
 			$this->addFootnotes($articleContent);
 		}
 	}
-
+	
 	/**
 	* Get the article title as an H1.
 	*
@@ -259,11 +258,11 @@ class Readability
 		try {
 			$curTitle = $origTitle = $this->getInnerText($this->dom->getElementsByTagName('title')->item(0));
 		} catch(Exception $e) {}
-
+		
 		if (preg_match('/ [\|\-] /', $curTitle))
 		{
 			$curTitle = preg_replace('/(.*)[\|\-] .*/i', '$1', $origTitle);
-
+			
 			if (count(explode(' ', $curTitle)) < 3) {
 				$curTitle = preg_replace('/[^\|\-]*[\|\-](.*)/i', '$1', $origTitle);
 			}
@@ -290,17 +289,17 @@ class Readability
 		if (count(explode(' ', $curTitle)) <= 4) {
 			$curTitle = $origTitle;
 		}
-
+		
 		$articleTitle = $this->dom->createElement('h1');
 		$articleTitle->innerHTML = $curTitle;
-
+		
 		return $articleTitle;
 	}
-
+	
 	/**
 	* Prepare the HTML document for readability to scrape it.
 	* This includes things like stripping javascript, CSS, and handling terrible markup.
-	*
+	* 
 	* @return void
 	**/
 	protected function prepDocument() {
@@ -343,13 +342,13 @@ class Readability
 		$footnotesWrapper = $this->dom->createElement('div');
 		$footnotesWrapper->setAttribute('id', 'readability-footnotes');
 		$footnotesWrapper->innerHTML = '<h3>References</h3>';
-
+		
 		$articleFootnotes = $this->dom->createElement('ol');
 		$articleFootnotes->setAttribute('id', 'readability-footnotes-list');
 		$footnotesWrapper->appendChild($articleFootnotes);
-
+		
 		$articleLinks = $articleContent->getElementsByTagName('a');
-
+		
 		$linkCount = 0;
 		for ($i = 0; $i < $articleLinks->length; $i++)
 		{
@@ -361,11 +360,11 @@ class Readability
 			if (!$linkDomain && isset($this->url)) $linkDomain = @parse_url($this->url, PHP_URL_HOST);
 			//linkDomain   = footnoteLink.host ? footnoteLink.host : document.location.host,
 			$linkText     = $this->getInnerText($articleLink);
-
+			
 			if ((strpos($articleLink->getAttribute('class'), 'readability-DoNotFootnote') !== false) || preg_match($this->regexps['skipFootnoteLink'], $linkText)) {
 				continue;
 			}
-
+			
 			$linkCount++;
 
 			/** Add a superscript reference after the article link */
@@ -373,7 +372,7 @@ class Readability
 			$refLink->innerHTML = '<small><sup>[' . $linkCount . ']</sup></small>';
 			$refLink->setAttribute('class', 'readability-DoNotFootnote');
 			$refLink->setAttribute('style', 'color: inherit;');
-
+			
 			//TODO: does this work or should we use DOMNode.isSameNode()?
 			if ($articleLink->parentNode->lastChild == $articleLink) {
 				$articleLink->parentNode->appendChild($refLink);
@@ -388,15 +387,15 @@ class Readability
 
 			$footnoteLink->innerHTML = ($footnoteLink->getAttribute('title') != '' ? $footnoteLink->getAttribute('title') : $linkText);
 			$footnoteLink->setAttribute('name', 'readabilityFootnoteLink-' . $linkCount);
-
+			
 			$footnote->appendChild($footnoteLink);
 			if ($linkDomain) $footnote->innerHTML = $footnote->innerHTML . '<small> (' . $linkDomain . ')</small>';
-
+			
 			$articleFootnotes->appendChild($footnote);
 		}
 
 		if ($linkCount > 0) {
-			$articleContent->appendChild($footnotesWrapper);
+			$articleContent->appendChild($footnotesWrapper);           
 		}
 	}
 
@@ -419,7 +418,7 @@ class Readability
 			//}
 		}
 	}
-
+	
 	/**
 	* Prepare the article node for display. Clean out any inline styles,
 	* iframes, forms, strip extraneous <p> tags, etc.
@@ -444,7 +443,7 @@ class Readability
 		* as a header and not a subheader, so remove it since we already have a header.
 		***/
 		if (!$this->lightClean && ($articleContent->getElementsByTagName('h2')->length == 1)) {
-			$this->clean($articleContent, 'h2');
+			$this->clean($articleContent, 'h2'); 
 		}
 		$this->clean($articleContent, 'iframe');
 
@@ -463,7 +462,7 @@ class Readability
 			$embedCount  = $articleParagraphs->item($i)->getElementsByTagName('embed')->length;
 			$objectCount = $articleParagraphs->item($i)->getElementsByTagName('object')->length;
 			$iframeCount = $articleParagraphs->item($i)->getElementsByTagName('iframe')->length;
-
+			
 			if ($imgCount === 0 && $embedCount === 0 && $objectCount === 0 && $iframeCount === 0 && $this->getInnerText($articleParagraphs->item($i), false) == '')
 			{
 				$articleParagraphs->item($i)->parentNode->removeChild($articleParagraphs->item($i));
@@ -472,13 +471,13 @@ class Readability
 
 		try {
 			$articleContent->innerHTML = preg_replace('/<br[^>]*>\s*<p/i', '<p', $articleContent->innerHTML);
-			//articleContent.innerHTML = articleContent.innerHTML.replace(/<br[^>]*>\s*<p/gi, '<p');
+			//articleContent.innerHTML = articleContent.innerHTML.replace(/<br[^>]*>\s*<p/gi, '<p');      
 		}
 		catch (Exception $e) {
 			$this->dbg("Cleaning innerHTML of breaks failed. This is an IE strict-block-elements bug. Ignoring.: " . $e);
 		}
 	}
-
+	
 	/**
 	* Initialize a node with the readability object. Also checks the
 	* className/id for special names to add to its score.
@@ -489,7 +488,7 @@ class Readability
 	protected function initializeNode($node) {
 		$readability = $this->dom->createAttribute('readability');
 		$readability->value = 0; // this is our contentScore
-		$node->setAttributeNode($readability);
+		$node->setAttributeNode($readability);		         
 
 		switch (strtoupper($node->tagName)) { // unsure if strtoupper is needed, but using it just in case
 			case 'DIV':
@@ -501,7 +500,7 @@ class Readability
 			case 'BLOCKQUOTE':
 				$readability->value += 3;
 				break;
-
+				
 			case 'ADDRESS':
 			case 'OL':
 			case 'UL':
@@ -525,7 +524,7 @@ class Readability
 		}
 		$readability->value += $this->getClassWeight($node);
 	}
-
+	
 	/***
 	* grabArticle - Using a variety of metrics (content score, classname, element types), find the content that is
 	*               most likely to be the stuff a user wants to read. Then return it wrapped up in a div.
@@ -563,7 +562,7 @@ class Readability
 					$node->parentNode->removeChild($node);
 					$nodeIndex--;
 					continue;
-				}
+				}               
 			}
 
 			if ($tagName == 'P' || $tagName == 'TD' || $tagName == 'PRE') {
@@ -604,7 +603,7 @@ class Readability
 				}
 			}
 		}
-
+		
 		/**
 		* Loop through all paragraphs, and assign a score to them based on how content-y they look.
 		* Then add their score to their parent node.
@@ -628,7 +627,7 @@ class Readability
 			}
 
 			/* Initialize readability data for the parent. */
-			if (!$parentNode->hasAttribute('readability'))
+			if (!$parentNode->hasAttribute('readability')) 
 			{
 				$this->initializeNode($parentNode);
 				$candidates[] = $parentNode;
@@ -648,15 +647,15 @@ class Readability
 
 			/* Add points for any commas within this paragraph */
 			$contentScore += count(explode(',', $innerText));
-
+			
 			/* For every 100 characters in this paragraph, add another point. Up to 3 points. */
 			$contentScore += min(floor(strlen($innerText) / 100), 3);
-
+			
 			/* Add the score to the parent. The grandparent gets half. */
 			$parentNode->getAttributeNode('readability')->value += $contentScore;
 
 			if ($grandParentNode) {
-				$grandParentNode->getAttributeNode('readability')->value += $contentScore/2;
+				$grandParentNode->getAttributeNode('readability')->value += $contentScore/2;             
 			}
 		}
 
@@ -742,12 +741,12 @@ class Readability
 			{
 				$append = true;
 			}
-
+			
 			if (strtoupper($siblingNode->nodeName) == 'P') {
 				$linkDensity = $this->getLinkDensity($siblingNode);
 				$nodeContent = $this->getInnerText($siblingNode);
 				$nodeLength  = strlen($nodeContent);
-
+				
 				if ($nodeLength > 80 && $linkDensity < 0.25)
 				{
 					$append = true;
@@ -766,7 +765,7 @@ class Readability
 				$sibNodeName = strtoupper($siblingNode->nodeName);
 				if ($sibNodeName != 'DIV' && $sibNodeName != 'P') {
 					/* We have a node that isn't a common block level element, like a form or td tag. Turn it into a div so it doesn't get filtered out later by accident. */
-
+					
 					$this->dbg('Altering siblingNode of ' . $sibNodeName . ' to div.');
 					$nodeToAppend = $this->dom->createElement('div');
 					try {
@@ -785,7 +784,7 @@ class Readability
 					$s--;
 					$sl--;
 				}
-
+				
 				/* To ensure a node does not interfere with readability styles, remove its classnames */
 				$nodeToAppend->removeAttribute('class');
 
@@ -811,14 +810,14 @@ class Readability
 			// in the meantime, we check and create an empty element if it's not there.
 			if (!isset($this->body->childNodes)) $this->body = $this->dom->createElement('body');
 			$this->body->innerHTML = $this->bodyCache;
-
+			
 			if ($this->flagIsActive(self::FLAG_STRIP_UNLIKELYS)) {
 				$this->removeFlag(self::FLAG_STRIP_UNLIKELYS);
 				return $this->grabArticle($this->body);
 			}
 			else if ($this->flagIsActive(self::FLAG_WEIGHT_CLASSES)) {
 				$this->removeFlag(self::FLAG_WEIGHT_CLASSES);
-				return $this->grabArticle($this->body);
+				return $this->grabArticle($this->body);              
 			}
 			else if ($this->flagIsActive(self::FLAG_CLEAN_CONDITIONALLY)) {
 				$this->removeFlag(self::FLAG_CLEAN_CONDITIONALLY);
@@ -830,7 +829,7 @@ class Readability
 		}
 		return $articleContent;
 	}
-
+	
 	/**
 	* Remove script tags from document
 	*
@@ -848,7 +847,7 @@ class Readability
 			}
 		}
 	}
-
+	
 	/**
 	* Get the inner text of a node.
 	* This also strips out any excess whitespace to be found.
@@ -897,11 +896,11 @@ class Readability
 			$elem->removeAttribute('style');
 		}
 	}
-
+	
 	/**
 	* Get the density of links as a percentage of the content
 	* This is the amount of text that is inside a link divided by the total text in the node.
-	*
+	* 
 	* @param DOMElement $e
 	* @return number (float)
 	*/
@@ -919,9 +918,9 @@ class Readability
 			return 0;
 		}
 	}
-
+	
 	/**
-	* Get an elements class/id weight. Uses regular expressions to tell if this
+	* Get an elements class/id weight. Uses regular expressions to tell if this 
 	* element looks good or bad.
 	*
 	* @param DOMElement $e
@@ -983,7 +982,7 @@ class Readability
 	public function clean($e, $tag) {
 		$targetList = $e->getElementsByTagName($tag);
 		$isEmbed = ($tag == 'iframe' || $tag == 'object' || $tag == 'embed');
-
+		
 		for ($y=$targetList->length-1; $y >= 0; $y--) {
 			/* Allow youtube and vimeo videos through as people usually want to see those. */
 			if ($isEmbed) {
@@ -991,7 +990,7 @@ class Readability
 				for ($i=0, $il=$targetList->item($y)->attributes->length; $i < $il; $i++) {
 					$attributeValues .= $targetList->item($y)->attributes->item($i)->value . '|'; // DOMAttr? (TODO: test)
 				}
-
+				
 				/* First, check the elements attributes to see if any of them contain youtube or vimeo */
 				if (preg_match($this->regexps['video'], $attributeValues)) {
 					continue;
@@ -1005,10 +1004,10 @@ class Readability
 			$targetList->item($y)->parentNode->removeChild($targetList->item($y));
 		}
 	}
-
+	
 	/**
 	* Clean an element of all tags of type "tag" if they look fishy.
-	* "Fishy" is an algorithm based on content length, classnames,
+	* "Fishy" is an algorithm based on content length, classnames, 
 	* link density, number of images & embeds, etc.
 	*
 	* @param DOMElement $e
@@ -1032,7 +1031,7 @@ class Readability
 		for ($i=$curTagsLength-1; $i >= 0; $i--) {
 			$weight = $this->getClassWeight($tagsList->item($i));
 			$contentScore = ($tagsList->item($i)->hasAttribute('readability')) ? (int)$tagsList->item($i)->getAttribute('readability') : 0;
-
+			
 			$this->dbg('Cleaning Conditionally ' . $tagsList->item($i)->tagName . ' (' . $tagsList->item($i)->getAttribute('class') . ':' . $tagsList->item($i)->getAttribute('id') . ')' . (($tagsList->item($i)->hasAttribute('readability')) ? (' with score ' . $tagsList->item($i)->getAttribute('readability')) : ''));
 
 			if ($weight + $contentScore < 0) {
@@ -1053,13 +1052,13 @@ class Readability
 				$embeds = $tagsList->item($i)->getElementsByTagName('embed');
 				for ($ei=0, $il=$embeds->length; $ei < $il; $ei++) {
 					if (preg_match($this->regexps['video'], $embeds->item($ei)->getAttribute('src'))) {
-						$embedCount++;
+						$embedCount++; 
 					}
 				}
 				$embeds = $tagsList->item($i)->getElementsByTagName('iframe');
 				for ($ei=0, $il=$embeds->length; $ei < $il; $ei++) {
 					if (preg_match($this->regexps['video'], $embeds->item($ei)->getAttribute('src'))) {
-						$embedCount++;
+						$embedCount++; 
 					}
 				}
 
@@ -1077,7 +1076,7 @@ class Readability
 						$toRemove = true;
 					} else if ( $input > floor($p/3) ) {
 						$this->dbg(' too many <input> elements');
-						$toRemove = true;
+						$toRemove = true; 
 					} else if ($contentLength < 10 && ($embedCount === 0 && ($img === 0 || $img > 2))) {
 						$this->dbg(' content length less than 10 chars, 0 embeds and either 0 images or more than 2 images');
 						$toRemove = true;
@@ -1101,7 +1100,7 @@ class Readability
 						$toRemove = true;
 					} else if ( $input > floor($p/3) ) {
 						$this->dbg(' too many <input> elements');
-						$toRemove = true;
+						$toRemove = true; 
 					} else if ($contentLength < 25 && ($img === 0 || $img > 2) ) {
 						$this->dbg(' content length less than 25 chars and 0 images, or more than 2 images');
 						$toRemove = true;
@@ -1145,11 +1144,11 @@ class Readability
 	public function flagIsActive($flag) {
 		return ($this->flags & $flag) > 0;
 	}
-
+	
 	public function addFlag($flag) {
 		$this->flags = $this->flags | $flag;
 	}
-
+	
 	public function removeFlag($flag) {
 		$this->flags = $this->flags & ~$flag;
 	}

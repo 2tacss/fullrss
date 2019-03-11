@@ -1,10 +1,10 @@
 <?php
 /**
  * Content Extractor
- *
- * Uses patterns specified in site config files and auto detection (hNews/PHP Readability)
+ * 
+ * Uses patterns specified in site config files and auto detection (hNews/PHP Readability) 
  * to extract content from HTML files.
- *
+ * 
  * @version 1.1
  * @date 2014-03-28
  * @author Keyvan Minoukadeh
@@ -52,9 +52,9 @@ class ContentExtractor
 	public $debugVerbose = false;
 
 	function __construct($path, $fallback=null) {
-		SiteConfig::set_config_path($path, $fallback);
+		SiteConfig::set_config_path($path, $fallback);	
 	}
-
+	
 	protected function debug($msg) {
 		if ($this->debug) {
 			$mem = round(memory_get_usage()/1024, 2);
@@ -66,7 +66,7 @@ class ContentExtractor
 			flush();
 		}
 	}
-
+	
 	public function reset() {
 		// we do not reset $this->userSubmittedConfig (it gets reused)
 		$this->html = null;
@@ -102,7 +102,7 @@ class ContentExtractor
 		$this->debug('No fingerprint matches');
 		return false;
 	}
-
+	
 	// returns SiteConfig instance (joined in order: exact match, wildcard, fingerprint, global, default)
 	public function buildSiteConfig($url, $html='', $add_to_cache=true) {
 		// extract host name
@@ -158,7 +158,7 @@ class ContentExtractor
 		}
 		return $config;
 	}
-
+	
 	// returns true on success, false on failure
 	// $smart_tidy indicates that if tidy is used and no results are produced, we will
 	// try again without it. Tidy helps us deal with PHP's patchy HTML parsing most of the time
@@ -176,7 +176,7 @@ class ContentExtractor
 		} else {
 			$this->config = $this->buildSiteConfig($url, $html);
 		}
-
+		
 		// do string replacements
 		if (!empty($this->config->find_string)) {
 			if (count($this->config->find_string) == count($this->config->replace_string)) {
@@ -187,7 +187,7 @@ class ContentExtractor
 			}
 			unset($_count);
 		}
-
+		
 		// use tidy (if it exists)?
 		// This fixes problems with some sites which would otherwise
 		// trouble DOMDocument's HTML parsing. (Although sometimes it
@@ -203,7 +203,7 @@ class ContentExtractor
 			}
 			unset($tidy);
 		}
-
+		
 		// load and parse html
 		if ($this->parserOverride) {
 			// from querystring: &parser=xxx
@@ -220,7 +220,7 @@ class ContentExtractor
 		}
 		$this->debug("Attempting to parse HTML with $_parser");
 		$this->readability = new Readability($html, $url, $_parser);
-
+		
 		// we use xpath to find elements in the given HTML document
 		// see http://en.wikipedia.org/wiki/XPath_1.0
 		$xpath = new DOMXPath($this->readability->dom);
@@ -243,7 +243,7 @@ class ContentExtractor
 				}
 			}
 		}
-
+		
 		// check if this is a native ad
 		foreach ($this->config->native_ad_clue as $pattern) {
 			$elems = @$xpath->evaluate($pattern, $this->readability->dom);
@@ -275,7 +275,7 @@ class ContentExtractor
 				break;
 			}
 		}
-
+		
 		// try to get author (if it hasn't already been set)
 		if (empty($this->author)) {
 			foreach ($this->config->author as $pattern) {
@@ -300,7 +300,7 @@ class ContentExtractor
 				}
 			}
 		}
-
+		
 		// try to get language
 		$_lang_xpath = array('//html[@lang]/@lang', '//meta[@name="DC.language"]/@content');
 		foreach ($_lang_xpath as $pattern) {
@@ -315,7 +315,7 @@ class ContentExtractor
 				foreach ($elems as $elem) {
 					if (!isset($elem->parentNode)) continue;
 					$this->language = trim($elem->textContent);
-					$this->debug('Language matched: '.$this->language);
+					$this->debug('Language matched: '.$this->language);					
 				}
 				if ($this->language) break;
 			}
@@ -343,7 +343,7 @@ class ContentExtractor
 		foreach ($this->config->date as $pattern) {
 			$elems = @$xpath->evaluate($pattern, $this->readability->dom);
 			if (is_string($elems)) {
-				$this->date = strtotime(trim($elems, "; \t\n\r\0\x0B"));
+				$this->date = strtotime(trim($elems, "; \t\n\r\0\x0B"));				
 			} elseif ($elems instanceof DOMNodeList && $elems->length > 0) {
 				$this->date = $elems->item(0)->textContent;
 				$this->date = strtotime(trim($this->date, "; \t\n\r\0\x0B"));
@@ -372,7 +372,7 @@ class ContentExtractor
 				}
 			}
 		}
-
+		
 		// strip elements (using id and class attribute values)
 		foreach ($this->config->strip_id_or_class as $string) {
 			$string = strtr($string, array("'"=>'', '"'=>''));
@@ -385,7 +385,7 @@ class ContentExtractor
 				}
 			}
 		}
-
+		
 		// strip images (using src attribute values)
 		foreach ($this->config->strip_image_src as $string) {
 			$string = strtr($string, array("'"=>'', '"'=>''));
@@ -410,7 +410,7 @@ class ContentExtractor
 				$elems->item($i)->parentNode->removeChild($elems->item($i));
 			}
 		}
-
+		
 		// strip elements that contain style="display: none;"
 		$elems = @$xpath->query("//*[contains(@style,'display:none')]", $this->readability->dom);
 		// check for matches
@@ -430,7 +430,7 @@ class ContentExtractor
 				$elems->item($i)->parentNode->removeChild($elems->item($i));
 			}
 		}
-
+		
 		// try to get body
 		foreach ($this->config->body as $pattern) {
 			$elems = @$xpath->query($pattern, $this->readability->dom);
@@ -438,7 +438,7 @@ class ContentExtractor
 			if ($elems && $elems->length > 0) {
 				$this->debug('Body matched');
 				$this->debug("...XPath match: $pattern");
-				if ($elems->length == 1) {
+				if ($elems->length == 1) {				
 					$this->body = $elems->item(0);
 					// prune (clean up elements that may not be content)
 					if ($this->config->prune()) {
@@ -473,8 +473,8 @@ class ContentExtractor
 					if ($this->body->hasChildNodes()) break;
 				}
 			}
-		}
-
+		}		
+		
 		// auto detect?
 		$detect_title = $detect_body = $detect_author = $detect_date = false;
 		// detect title?
@@ -509,7 +509,7 @@ class ContentExtractor
 			if ($elems && $elems->length > 0) {
 				$this->debug('hNews: found hentry');
 				$hentry = $elems->item(0);
-
+				
 				if ($detect_title) {
 					// check for entry-title
 					$elems = @$xpath->query(".//*[contains(concat(' ',normalize-space(@class),' '),' entry-title ')]", $hentry);
@@ -521,7 +521,7 @@ class ContentExtractor
 						$detect_title = false;
 					}
 				}
-
+				
 				if ($detect_date) {
 					// check for time element with pubdate attribute
 					$elems = @$xpath->query(".//time[@pubdate or @pubDate] | .//abbr[contains(concat(' ',normalize-space(@class),' '),' published ')]", $hentry);
@@ -560,7 +560,7 @@ class ContentExtractor
 						$detect_author = empty($this->author);
 					}
 				}
-
+				
 				// check for entry-content.
 				// according to hAtom spec, if there are multiple elements marked entry-content,
 				// we include all of these in the order they appear - see http://microformats.org/wiki/hatom#Entry_Content
@@ -602,8 +602,8 @@ class ContentExtractor
 									if ($this->config->prune()) {
 										$this->debug('Pruning content');
 										$this->readability->prepArticle($elem);
-									}
-									$this->debug('Element added to body');
+									}								
+									$this->debug('Element added to body');									
 									$this->body->appendChild($elem);
 								}
 							}
@@ -680,8 +680,8 @@ class ContentExtractor
 							if ($this->config->prune()) {
 								$this->debug('Pruning content');
 								$this->readability->prepArticle($elem);
-							}
-							$this->debug('Element added to body');
+							}								
+							$this->debug('Element added to body');									
 							$this->body->appendChild($elem);
 						}
 					}
@@ -689,7 +689,7 @@ class ContentExtractor
 				}
 			}
 		}
-
+		
 		// Find author in rel="author" marked element
 		// We only use this if there's exactly one.
 		// If there's more than one, it could indicate more than
@@ -774,7 +774,7 @@ class ContentExtractor
 			}
 			// remove image lazy loading - WordPress plugin http://wordpress.org/extend/plugins/lazy-load/
 			// the plugin replaces the src attribute to point to a 1x1 gif and puts the original src
-			// inside the data-lazy-src attribute. It also places the original image inside a noscript element
+			// inside the data-lazy-src attribute. It also places the original image inside a noscript element 
 			// next to the amended one.
 			$elems = @$xpath->query("//img[@data-lazy-src]", $this->body);
 			for ($i = $elems->length-1; $i >= 0; $i--) {
@@ -791,10 +791,10 @@ class ContentExtractor
 					$e->removeAttribute('data-lazy-src');
 				}
 			}
-
+		
 			$this->success = true;
 		}
-
+		
 		// if we've had no success and we've used tidy, there's a chance
 		// that tidy has messed up. So let's try again without tidy...
 		if (!$this->success && $tidied && $smart_tidy) {
@@ -804,7 +804,7 @@ class ContentExtractor
 
 		return $this->success;
 	}
-
+	
 	private function isDescendant(DOMElement $parent, DOMElement $child) {
 		$node = $child->parentNode;
 		while ($node != null) {
@@ -829,27 +829,27 @@ class ContentExtractor
 	public function isNativeAd() {
 		return $this->nativeAd;
 	}
-
+	
 	public function getTitle() {
 		return $this->title;
 	}
-
+	
 	public function getAuthors() {
 		return $this->author;
 	}
-
+	
 	public function getLanguage() {
 		return $this->language;
 	}
-
+	
 	public function getDate() {
 		return $this->date;
 	}
-
+	
 	public function getSiteConfig() {
 		return $this->config;
 	}
-
+	
 	public function getNextPageUrl() {
 		return $this->nextPageUrl;
 	}
